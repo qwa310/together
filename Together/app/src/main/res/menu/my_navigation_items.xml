@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/surroundings"
+        android:title="주변"
+        android:icon="@drawable/ic_location_foreground" />
+    <item android:id="@+id/feeling"
+        android:title="상태 변화"
+        android:icon="@drawable/ic_face_foreground"/>
+    <item android:id="@+id/sos"
+        android:title="SOS 긴급 전화"
+        android:icon="@drawable/ic_call_foreground"/>
+    <item android:id="@+id/my"
+        android:title="MY"
+        android:icon="@drawable/ic_account_foreground"/>
+</menu>

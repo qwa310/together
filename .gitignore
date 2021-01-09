@@ -1,4 +1,3 @@
-
 # Created by https://www.toptal.com/developers/gitignore/api/androidstudio
 # Edit at https://www.toptal.com/developers/gitignore?templates=androidstudio
 
@@ -142,5 +141,9 @@ fabric.properties
 ### AndroidStudio Patch ###
 
 !/gradle/wrapper/gradle-wrapper.jar
+
+
+# AndroidManifest for naver map client ID
+AndroidManifest.xml
 
 # End of https://www.toptal.com/developers/gitignore/api/androidstudio

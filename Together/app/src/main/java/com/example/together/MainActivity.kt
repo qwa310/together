@@ -29,10 +29,6 @@ class MainActivity : AppCompatActivity() {
                     replaceFragment(FeelingFragment())
                     return@setOnNavigationItemSelectedListener true
                 }
-                R.id.sos -> {
-                    replaceFragment(SosFragment())
-                    return@setOnNavigationItemSelectedListener true
-                }
                 R.id.my -> {
                     replaceFragment(MyFragment())
                     return@setOnNavigationItemSelectedListener true

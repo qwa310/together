@@ -81,10 +81,10 @@ class SurroundingsFragment : Fragment(), OnMapReadyCallback {
         this.naverMap.locationTrackingMode = LocationTrackingMode.Follow
 
         // 위치 변경 이벤트, 위치 추적 테스트용
-        this.naverMap.addOnLocationChangeListener {
-            Toast.makeText(mContext, "${it.latitude}, ${it.longitude}",
-                    Toast.LENGTH_SHORT).show()
-        }
+//        this.naverMap.addOnLocationChangeListener {
+//            Toast.makeText(mContext, "${it.latitude}, ${it.longitude}",
+//                    Toast.LENGTH_SHORT).show()
+//        }
     }
 
 

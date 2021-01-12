@@ -10,7 +10,7 @@
         android:id="@+id/tvItem"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:padding="16dp"
         android:text="TextView"
         android:textSize="16sp"
         android:textColor="@color/black"

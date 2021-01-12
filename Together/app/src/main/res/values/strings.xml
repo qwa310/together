@@ -1,4 +1,4 @@
 <resources>
     <string name="app_name">Together</string>
-    <!-- TODO: Remove or change this placeholder text -->
+    <string name="withdrawal"><u>회원탈퇴</u></string>
 </resources>

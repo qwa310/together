@@ -1,9 +1,6 @@
 package com.example.together;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,27 +8,32 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import androidx.fragment.app.Fragment;
+
 import java.util.ArrayList;
-import java.util.List;
 
 
 public class MyFragment extends Fragment {
 
     ArrayList<String> myListItem;
+    ArrayList<String> logoutListItem;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_my, container, false);
 
-        ListView listView = view.findViewById(R.id.lvMy);
+        ListView lvMy = view.findViewById(R.id.lvMy);
+        ListView lvLogout = view.findViewById(R.id.lvLogout);
 
         initListItem();
         final MyAdapter myAdapter = new MyAdapter(this.getContext(), myListItem);
+        final LogoutAdapter logoutAdapter = new LogoutAdapter(this.getContext(), logoutListItem);
 
-        listView.setAdapter(myAdapter);
+        lvMy.setAdapter(myAdapter);
+        lvLogout.setAdapter(logoutAdapter);
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        lvMy.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View v, int position, long id) {
                 Toast.makeText(getContext(), myAdapter.getItem(position).toString(),
@@ -51,15 +53,24 @@ public class MyFragment extends Fragment {
             }
         });
 
+        lvLogout.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                // TODO: logout
+            }
+        });
+
         // Inflate the layout for this fragment
         return view;
     }
 
     public void initListItem() {
         myListItem = new ArrayList<String>();
+        logoutListItem = new ArrayList<String>();
 
         myListItem.add("긴급 전화번호 관리");
         myListItem.add("보호자 관리");
         myListItem.add("피보호자 관리");
+        logoutListItem.add("로그아웃");
     }
 }

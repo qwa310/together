@@ -5,14 +5,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
-import androidx.viewpager.widget.ViewPager
 import com.example.together.databinding.ActivityMainBinding
-import com.google.android.material.tabs.TabLayout
+import com.kakao.sdk.common.KakaoSdk
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        KakaoSdk.init(this, "fbbeeae40f5581bd72df9cf57bee923e")
 
         replaceFragment(SurroundingsFragment())
 
@@ -44,7 +45,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun replaceFragment(fragment: Fragment) {
+    fun replaceFragment(fragment: Fragment) {
         val fragmentTransaction: FragmentTransaction = supportFragmentManager.beginTransaction()
         fragmentTransaction.replace(R.id.frameLayout, fragment)
         fragmentTransaction.commit()

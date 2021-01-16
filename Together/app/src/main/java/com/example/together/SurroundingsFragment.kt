@@ -1,20 +1,17 @@
 package com.example.together
 
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.os.Bundle
-import android.os.WorkSource
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.annotation.UiThread
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.Transformations.map
+import androidx.fragment.app.Fragment
 import com.example.together.databinding.FragmentSurroundingsBinding
-import com.naver.maps.geometry.LatLng
+import com.kakao.sdk.user.UserApiClient
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapFragment
 import com.naver.maps.map.NaverMap
@@ -51,6 +48,19 @@ class SurroundingsFragment : Fragment(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
 
         locationSource = FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
+
+        // TODO: 로그인 성공 여부 확인 -> 토큰 생성 실패
+        // 토큰 정보 보기
+        UserApiClient.instance.accessTokenInfo { tokenInfo, error ->
+            if (error != null) {
+                Log.e(TAG, "토큰 정보 보기 실패", error)
+            }
+            else if (tokenInfo != null) {
+                Log.i(TAG, "토큰 정보 보기 성공" +
+                        "\n회원번호: ${tokenInfo.id}" +
+                        "\n만료시간: ${tokenInfo.expiresIn} 초")
+            }
+        }
 
         return binding.root
     }

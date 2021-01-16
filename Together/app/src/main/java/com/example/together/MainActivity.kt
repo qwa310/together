@@ -30,7 +30,11 @@ class MainActivity : AppCompatActivity() {
                     return@setOnNavigationItemSelectedListener true
                 }
                 R.id.my -> {
-                    replaceFragment(MyFragment())
+                    // TODO: 로그인 페이지 & 마이페이지 구분
+                    // 로그인 페이지
+                    replaceFragment(LoginFragment())
+                    // 마이페이지
+//                    replaceFragment(MyFragment())
                     return@setOnNavigationItemSelectedListener true
                 }
                 else -> {

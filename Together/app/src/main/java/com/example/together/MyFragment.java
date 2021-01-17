@@ -1,5 +1,6 @@
 package com.example.together;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -10,7 +11,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +41,9 @@ public class MyFragment extends Fragment {
                     case 0: // 긴급 전화번호 관리
                         Toast.makeText(getContext(), "긴급전화번호 관리 페이지로 넘어갑니다",
                                 Toast.LENGTH_LONG).show();
+                        Intent callSettingIntent = new Intent(getActivity(),EmergencyCallSetting.class);
+                        startActivity(callSettingIntent);
+
                         break;
 
                     case 1: // 보호자 관리

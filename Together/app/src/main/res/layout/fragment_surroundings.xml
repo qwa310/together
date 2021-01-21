@@ -8,15 +8,15 @@
         android:layout_height="match_parent"
         tools:context=".SurroundingsFragment">
 
-        <FrameLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <FrameLayout
+            <RelativeLayout
                 android:id="@+id/map"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
-            </FrameLayout>
+            </RelativeLayout>
 
             <SearchView
                 android:layout_width="match_parent"
@@ -24,7 +24,7 @@
                 android:layout_gravity="top"
                 android:layout_margin="16dp"
                 android:background="@color/white" />
-        </FrameLayout>
+        </RelativeLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

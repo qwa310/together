@@ -1,16 +1,25 @@
 package com.example.together;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
+import com.kakao.sdk.auth.LoginClient;
+import com.kakao.sdk.user.UserApiClient;
+
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static android.content.ContentValues.TAG;
 
 
 public class MyFragment extends Fragment {
@@ -22,6 +31,9 @@ public class MyFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_my, container, false);
+
+        TextView userName = view.findViewById(R.id.userName);
+        TextView userEmail = view.findViewById(R.id.userEmail);
 
         ListView lvMy = view.findViewById(R.id.lvMy);
         ListView lvLogout = view.findViewById(R.id.lvLogout);
@@ -58,6 +70,53 @@ public class MyFragment extends Fragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 // TODO: logout
             }
+        });
+
+        // 사용자 정보 요청
+        UserApiClient.getInstance().me((user, error) -> {
+            if (error != null) {
+                Log.e(TAG, "사용자 정보 요청 실패", error);
+            }
+            else if (user != null) {
+                if (user.getKakaoAccount().getEmail() != null) {
+                    Log.i(TAG, "사용자 정보 요청 성공" +
+                            "\n회원번호: "+ user.getId() +
+                            "\n이메일: " + user.getKakaoAccount().getEmail() +
+                            "\n닉네임: " + user.getKakaoAccount().getProfile().getNickname());
+
+                    userName.setText(user.getKakaoAccount().getProfile().getNickname());
+                    userEmail.setText(user.getKakaoAccount().getEmail());
+                } else if (user.getKakaoAccount().getEmailNeedsAgreement() == false) {
+                    Log.e(TAG, "사용자 계정에 이메일 없음. 꼭 필요하다면 동의항목 설정에서 수집 기능을 활성화 해보세요.");
+                } else if (user.getKakaoAccount().getEmailNeedsAgreement() == true) {
+                    Log.d(TAG, "사용자에게 이메일 제공 동의를 받아야 합니다.");
+
+                    // 사용자에게 이메일 제공 동의 요청
+                    List<String> scopes = Arrays.asList("account_email");
+                    LoginClient.getInstance().loginWithNewScopes(this.getContext(), scopes, (token, emailError) -> {
+                                if (emailError != null) {
+                                    Log.e(TAG, "이메일 제공 동의 실패", emailError);
+                                } else {
+                                    Log.d(TAG, "allowed scopes: " + token.getScopes());
+
+                                    // 사용자 정보 재요청
+                                    UserApiClient.getInstance().me((emailUser, emailError2) -> {
+                                                if (emailError2 != null) {
+                                                    Log.e(TAG, "사용자 정보 요청 실패", emailError2);
+                                                } else if (emailUser != null) {
+                                                    Log.i(TAG, "이메일: " + emailUser.getKakaoAccount().getEmail());
+                                                    userEmail.setText(emailUser.getKakaoAccount().getEmail());
+                                                }
+                                                return null;
+                                            });
+                                }
+                                return null;
+                            });
+
+                }
+
+            }
+            return null;
         });
 
         // Inflate the layout for this fragment

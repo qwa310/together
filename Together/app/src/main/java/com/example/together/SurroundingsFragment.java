@@ -39,16 +39,13 @@ public class SurroundingsFragment extends Fragment {
 
         // T Map View
         tMapView = new TMapView(this.getContext());
-
         // API 인증
         tMapView.setSKTMapApiKey(API_Key);
-
         // 세팅
         tMapView.setZoomLevel(15);
         tMapView.setIconVisibility(true);
         tMapView.setMapType(TMapView.MAPTYPE_STANDARD);
         tMapView.setLanguage(TMapView.LANGUAGE_KOREAN);
-
         // T Map View Using Linear Layout
         RelativeLayout relativeLayoutTmap = view.findViewById(R.id.map);
         relativeLayoutTmap.addView(tMapView);
@@ -57,7 +54,6 @@ public class SurroundingsFragment extends Fragment {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
-
         // GPS using T Map
         tMapGPS = new TMapGpsManager(this.getContext());
         // Initial Setting
@@ -73,6 +69,7 @@ public class SurroundingsFragment extends Fragment {
                 requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1); //위치권한 탐색 허용 관련 내용
             }
         }
+
         tMapView.setTrackingMode(true);
         //tMapView.setCompassMode(true);
         setGps();
@@ -81,7 +78,7 @@ public class SurroundingsFragment extends Fragment {
 
     private final LocationListener mLocationListener = new LocationListener() {
         public void onLocationChanged(Location location) {
-            //현재위치의 좌표를 알수있는 부분
+            //현재 위치 좌표
             if (location != null) {
                 latitude = location.getLatitude();
                 longitude = location.getLongitude();
@@ -100,7 +97,7 @@ public class SurroundingsFragment extends Fragment {
             final ArrayList<String> arrTitle = new ArrayList<>();
             final ArrayList<String> arrAddress = new ArrayList<>();
 
-            tMapData.findAroundNamePOI(tMapPoint, "경찰서;소방서;파출소;지구대;119;112",
+            tMapData.findAroundNamePOI(tMapPoint, "경찰서;소방서;파출소;지구대;치안센터", 8, 200,
                     new TMapData.FindAroundNamePOIListenerCallback() {
                         @Override
                         public void onFindAroundNamePOI(ArrayList<TMapPOIItem> poiItem) {

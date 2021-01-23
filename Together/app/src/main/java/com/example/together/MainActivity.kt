@@ -6,14 +6,11 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import com.example.together.databinding.ActivityMainBinding
-import com.kakao.sdk.common.KakaoSdk
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        KakaoSdk.init(this, "fbbeeae40f5581bd72df9cf57bee923e")
 
         replaceFragment(SurroundingsFragment())
 
@@ -33,9 +30,9 @@ class MainActivity : AppCompatActivity() {
                 R.id.my -> {
                     // TODO: 로그인 페이지 & 마이페이지 구분
                     // 로그인 페이지
-                    replaceFragment(LoginFragment())
+//                    replaceFragment(LoginFragment())
                     // 마이페이지
-//                    replaceFragment(MyFragment())
+                    replaceFragment(MyFragment())
                     return@setOnNavigationItemSelectedListener true
                 }
                 else -> {

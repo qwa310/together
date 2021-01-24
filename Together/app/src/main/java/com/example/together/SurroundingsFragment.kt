@@ -49,7 +49,6 @@ class SurroundingsFragment : Fragment(), OnMapReadyCallback {
 
         locationSource = FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
 
-        // TODO: 로그인 성공 여부 확인 -> 토큰 생성 실패
         // 토큰 정보 보기
         UserApiClient.instance.accessTokenInfo { tokenInfo, error ->
             if (error != null) {

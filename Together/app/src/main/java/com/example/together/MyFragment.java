@@ -1,5 +1,8 @@
 package com.example.together;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,6 +21,7 @@ import com.kakao.sdk.user.UserApiClient;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import static android.content.ContentValues.TAG;
 
@@ -31,6 +35,9 @@ public class MyFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_my, container, false);
+
+        SharedPreferences pref = this.requireActivity()
+                .getSharedPreferences("myInfo", Context.MODE_PRIVATE);
 
         TextView userName = view.findViewById(R.id.userName);
         TextView userEmail = view.findViewById(R.id.userEmail);
@@ -68,7 +75,23 @@ public class MyFragment extends Fragment {
         lvLogout.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                // TODO: logout
+                UserApiClient.getInstance().unlink((error) -> {
+                    if (error != null) {
+                        Log.e(TAG, "로그아웃(연결 끊기) 실패.", error);
+                    } else {
+                        Log.i(TAG, "로그아웃(연결 끊기) 성공. SDK에서 토큰 삭제됨");
+
+                        SharedPreferences.Editor editor = pref.edit();
+                        editor.remove("token");
+                        editor.apply();
+
+                        Intent intent = new Intent(getActivity(), LoginActivity.class);
+                        startActivity(intent);
+
+                        Toast.makeText(getActivity(), "로그아웃 되었습니다.", Toast.LENGTH_SHORT).show();
+                    }
+                    return null;
+                });
             }
         });
 
@@ -106,6 +129,8 @@ public class MyFragment extends Fragment {
                                                 } else if (emailUser != null) {
                                                     Log.i(TAG, "이메일: " + emailUser.getKakaoAccount().getEmail());
                                                     userEmail.setText(emailUser.getKakaoAccount().getEmail());
+
+                                                    // TODO: Room 사용해서 UI가 데이터 변화를 감지하도록 변경
                                                 }
                                                 return null;
                                             });

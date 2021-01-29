@@ -73,7 +73,6 @@ class EmergencyCallSetting : Fragment() {
             getActivity()?.finish();
         }
 
-        }
         return view;
     }
 }

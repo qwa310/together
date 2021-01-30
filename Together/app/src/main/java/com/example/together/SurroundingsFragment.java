@@ -3,6 +3,8 @@ package com.example.together;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
@@ -17,6 +19,8 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.skt.Tmap.TMapData;
 import com.skt.Tmap.TMapGpsManager;
 import com.skt.Tmap.TMapMarkerItem;
@@ -31,8 +35,9 @@ public class SurroundingsFragment extends Fragment {
     TMapView tMapView;
     TMapGpsManager tMapGPS;
     public final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 1;
-    double longitude, latitude;
-    TMapPoint tMapPointStart, tMapPointEnd;
+    public double longitude, latitude, startLatitude, startLongitude;
+    TMapPoint tMapPointCurrent, tMapPointTo, tMapPointFrom;
+    boolean count = true;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -46,9 +51,9 @@ public class SurroundingsFragment extends Fragment {
 
         /**T Map SETTINGS**/
         tMapView.setZoomLevel(15);
-        tMapView.setIconVisibility(true);
         tMapView.setMapType(TMapView.MAPTYPE_STANDARD);
         tMapView.setLanguage(TMapView.LANGUAGE_KOREAN);
+        //tMapView.setIconVisibility(true);
 
         /**T Map View Using Linear Layout**/
         RelativeLayout relativeLayoutTmap = view.findViewById(R.id.map);
@@ -69,14 +74,32 @@ public class SurroundingsFragment extends Fragment {
         tMapGPS.setMinTime(1000);
         tMapGPS.setMinDistance(10);
         tMapGPS.setProvider(tMapGPS.GPS_PROVIDER);
-        //tMapGPS.setProvider(tMapGPS.NETWORK_PROVIDER);
         tMapView.setTrackingMode(true);
+        //tMapGPS.setProvider(tMapGPS.NETWORK_PROVIDER);
         //tMapView.setCompassMode(true);
 
-        setGps();
+
+        /**GPS Settings**/
+        final LocationManager lm = (LocationManager) this.getContext().getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this.getActivity(), new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION, android.Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        }
+        lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 1, mLocationListener);
+
+
+        /**Set Floating Button**/
+        FloatingActionButton fab = (FloatingActionButton) getActivity().findViewById(R.id.fabNavigation);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DrawPath();
+            }
+        });
+
         return view;
     }
 
+    /**Updating Current Location**/
     private final LocationListener mLocationListener = new LocationListener() {
         public void onLocationChanged(Location location) {
             /**Real time location**/
@@ -84,61 +107,105 @@ public class SurroundingsFragment extends Fragment {
                 latitude = location.getLatitude();
                 longitude = location.getLongitude();
                 tMapView.setLocationPoint(longitude, latitude);
-                tMapView.setCenterPoint(longitude, latitude,true);
-                TMapPoint arrTMapPoint = tMapView.getCenterPoint();
-                Log.d("TmapTest", "" + longitude + "," + latitude);
-                DrawPath();
-                searchPOI();
+                tMapView.setCenterPoint(longitude, latitude, true);
+                //TMapPoint arrTMapPoint = tMapView.getCenterPoint();
+                //Log.d("TmapTest", "" + longitude + "," + latitude);
+                tMapPointCurrent = new TMapPoint(latitude, longitude);
+                currentMarker(tMapPointCurrent);
+                if (count) {
+                    startLatitude = latitude;
+                    startLongitude = longitude;
+                    count = false;
+                }
+                searchPOI(tMapPointCurrent);
             }
-        }
-
-        public void DrawPath(){
-            tMapPointStart = new TMapPoint(latitude, longitude);
-            tMapPointEnd = new TMapPoint(35.18091375602048, 129.07494408467085);
-            TMapPolyLine polyLine = new TMapPolyLine();
-            PathAsync pathAsync = new PathAsync();
-            pathAsync.execute(polyLine);
-        }
-
-        public void searchPOI() {
-            TMapData tMapData = new TMapData();
-            TMapPoint tMapPoint = new TMapPoint(latitude, longitude);
-            final ArrayList<TMapPoint> arrTMapPoint = new ArrayList<>();
-            final ArrayList<String> arrTitle = new ArrayList<>();
-            final ArrayList<String> arrAddress = new ArrayList<>();
-
-            /**Find Positions**/
-            tMapData.findAroundNamePOI(tMapPoint, "경찰서;소방서;파출소;지구대;치안센터", 8, 200,
-                    new TMapData.FindAroundNamePOIListenerCallback() {
-                        @Override
-                        public void onFindAroundNamePOI(ArrayList<TMapPOIItem> poiItem) {
-                            for (int i = 0; i < poiItem.size(); i++) {
-                                TMapPOIItem item = poiItem.get(i);
-                                arrTMapPoint.add(item.getPOIPoint());
-                                arrTitle.add(item.getPOIName());
-                                arrAddress.add(item.upperAddrName + " " +
-                                        item.middleAddrName + " " + item.lowerAddrName);
-                            }
-                            setMultiMarkers(arrTMapPoint, arrTitle, arrAddress);
-                        }
-                    });
-        }
-
-        /**Set Multiple BalloonMarks**/
-        public void setMultiMarkers(ArrayList<TMapPoint> arrTPoint, ArrayList<String> arrTitle, ArrayList<String> arrAddress) {
-            for( int i = 0; i < arrTPoint.size(); i++ ) {
-                TMapMarkerItem tMapMarkerItem = new TMapMarkerItem();
-                tMapMarkerItem.setTMapPoint(arrTPoint.get(i));
-                tMapView.addMarkerItem("markerItem" + i, tMapMarkerItem);
-                setBalloonView(tMapMarkerItem, arrTitle.get(i), arrAddress.get(i));
-            }
-        }
-
-        /**Set BalloonMarks**/
-        public void setBalloonView(TMapMarkerItem marker, String title, String address) {
-            marker.setCanShowCallout(true);
         }
     };
+
+    /**Draw Path**/
+    public void DrawPath(){
+        tMapPointFrom = new TMapPoint(startLatitude, startLongitude);
+        tMapPointTo = new TMapPoint(35.18091375602048, 129.07494408467085);
+        setMarker();
+        TMapPolyLine polyLine = new TMapPolyLine();
+        PathAsync pathAsync = new PathAsync();
+        pathAsync.execute(polyLine);
+    }
+
+    /**Marker for Current Location**/
+    public void currentMarker(TMapPoint tMapPointCurrent){
+        TMapMarkerItem tMapMarkerItemCurrent = new TMapMarkerItem();
+        Bitmap currentPoint = createMarkerIcon(50, 50, R.drawable.colorfulcircled);
+        tMapMarkerItemCurrent.setIcon(currentPoint);
+        tMapMarkerItemCurrent.setTMapPoint(tMapPointCurrent);
+        tMapView.addMarkerItem("tMapMarkerItemCurrent", tMapMarkerItemCurrent);
+    }
+
+    /**Marker for Starting Point/Destination**/
+    public void setMarker(){
+        TMapMarkerItem tMapMarkerItemFrom = new TMapMarkerItem();
+        TMapMarkerItem tMapMarkerItemTo = new TMapMarkerItem();
+        Bitmap startPoint = createMarkerIcon(80, 80, R.drawable.red_marker);
+        tMapMarkerItemFrom.setIcon(startPoint);
+        tMapMarkerItemFrom.setTMapPoint(tMapPointFrom);
+        tMapView.addMarkerItem("tMapMarkerItemFrom", tMapMarkerItemFrom);
+        Bitmap endPoint = createMarkerIcon(80, 80, R.drawable.blue_marker);
+        tMapMarkerItemTo.setIcon(endPoint);
+        tMapMarkerItemTo.setTMapPoint(tMapPointTo);
+        tMapView.addMarkerItem("tMapMarkerItemTo", tMapMarkerItemTo);
+    }
+
+    /**Create Marker Icon**/
+    public Bitmap createMarkerIcon(int width, int height, int image) {
+        Bitmap bitmap = BitmapFactory.decodeResource(getContext().getResources(), image);
+        bitmap = Bitmap.createScaledBitmap(bitmap, width, height,false);
+        return bitmap;
+    }
+
+    /**Finder & Marker for Police Station**/
+    public void searchPOI(TMapPoint tMapPoint) {
+        TMapData tMapData = new TMapData();
+        final ArrayList<TMapPoint> searchPoint = new ArrayList<>();
+        /*final ArrayList<String> arrTitle = new ArrayList<>();
+        final ArrayList<String> arrAddress = new ArrayList<>();*/
+
+        /**Searching for Positions**/
+        tMapData.findAroundNamePOI(tMapPoint, "경찰서;소방서;파출소;지구대;치안센터", 30,5000,
+                new TMapData.FindAroundNamePOIListenerCallback() {
+                    @Override
+                    public void onFindAroundNamePOI(ArrayList<TMapPOIItem> poiItem) {
+                        for (int i = 0; i < poiItem.size(); i++) {
+                            TMapPOIItem item = poiItem.get(i);
+                            searchPoint.add(item.getPOIPoint());
+                            /*arrTitle.add(item.getPOIName());
+                            arrAddress.add(item.upperAddrName + " " +
+                                    item.middleAddrName + " " + item.lowerAddrName);*/
+                        }
+                        setMultiMarkers(searchPoint);
+                        //setMultiMarkers(arrTMapPoint, arrTitle, arrAddress);
+                    }
+                });
+    }
+
+    /**Set Multiple BalloonMarks**/
+    public void setMultiMarkers(ArrayList<TMapPoint> searchSpot) { // ArrayList<String> arrTitle, ArrayList<String> arrAddress
+        for( int i = 0; i < searchSpot.size(); i++ ) {
+            TMapMarkerItem tMapMarkerItem = new TMapMarkerItem();
+            Bitmap bitmap = createMarkerIcon(40, 40, R.drawable.green_marker);
+            tMapMarkerItem.setIcon(bitmap);
+            tMapMarkerItem.setTMapPoint(searchSpot.get(i));
+            tMapView.addMarkerItem("markerItem" + i, tMapMarkerItem);
+            //setBalloonView(tMapMarkerItem, arrTitle.get(i), arrAddress.get(i));
+        }
+    }
+
+    /**Set BalloonMarks**/
+    /*public void setBalloonView(TMapMarkerItem marker, String title, String address) {
+     marker.setCanShowCallout(true);
+     }
+     */
+
+
 
     /**Asynchronous Processing**/
     class PathAsync extends AsyncTask<TMapPolyLine, Void, TMapPolyLine> {
@@ -146,12 +213,12 @@ public class SurroundingsFragment extends Fragment {
         protected TMapPolyLine doInBackground(TMapPolyLine... tMapPolyLines) {
             TMapPolyLine tMapPolyLine = tMapPolyLines[0];
             try {
-                tMapPolyLine = new TMapData().findPathDataWithType(TMapData.TMapPathType.PEDESTRIAN_PATH, tMapPointStart, tMapPointEnd);
-                tMapPolyLine.setLineColor(Color.BLUE);
+                tMapPolyLine = new TMapData().findPathDataWithType(TMapData.TMapPathType.PEDESTRIAN_PATH, tMapPointFrom, tMapPointTo);
+                tMapPolyLine.setLineColor(Color.MAGENTA);
                 tMapPolyLine.setLineWidth(3);
 
-
-            }catch(Exception e) {
+            }
+            catch(Exception e) {
                 e.printStackTrace();
                 Log.e("error",e.getMessage());
             }
@@ -173,7 +240,11 @@ public class SurroundingsFragment extends Fragment {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    setGps();
+                    final LocationManager lm = (LocationManager) this.getContext().getSystemService(Context.LOCATION_SERVICE);
+                    if (ActivityCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(this.getActivity(), new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION, android.Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                    }
+                    lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 1, mLocationListener);
                 } else {
                     Log.d("locationTest", "동의 거부");
                 }
@@ -182,12 +253,4 @@ public class SurroundingsFragment extends Fragment {
         }
     }
 
-    /**GPS Settings**/
-    public void setGps() {
-        final LocationManager lm = (LocationManager) this.getContext().getSystemService(Context.LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this.getActivity(), new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION, android.Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-        }
-        lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 1, mLocationListener);
-    }
 };

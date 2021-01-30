@@ -13,10 +13,13 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
+
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
@@ -35,9 +38,11 @@ public class SurroundingsFragment extends Fragment {
     TMapView tMapView;
     TMapGpsManager tMapGPS;
     public final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 1;
-    public double longitude, latitude, startLatitude, startLongitude;
+    public double longitude, latitude, startLatitude, startLongitude, endLatitude, endLongitude;
+    double distanceLength;
     TMapPoint tMapPointCurrent, tMapPointTo, tMapPointFrom;
     boolean count = true;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -92,11 +97,63 @@ public class SurroundingsFragment extends Fragment {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                tMapPointFrom = new TMapPoint(startLatitude, startLongitude);
+                endLatitude = 35.18091375602048;
+                endLongitude = 129.07494408467085;
+                tMapPointTo = new TMapPoint(endLatitude, endLongitude);
+                distanceLength = distance(startLatitude, startLongitude, endLatitude, endLongitude, "kilometer");
+                String msg = "목적지까지 약 " + (int)distanceLength + "km 거리 입니다.";
+                toastDisplay(msg);
                 DrawPath();
             }
         });
 
         return view;
+    }
+
+    /**Toast Settings**/
+    public void toastDisplay(String msg){
+        Toast tos = null;
+        if(tos != null) {
+            tos.cancel();
+        }
+        tos = Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT);
+        tos.show();
+    }
+
+    /**
+     * 두 지점간의 거리 계산
+     *
+     * @param lat1 지점 1 위도
+     * @param lon1 지점 1 경도
+     * @param lat2 지점 2 위도
+     * @param lon2 지점 2 경도
+     * @param unit 거리 표출단위
+     * @return
+     */
+    private static double distance(double lat1, double lon1, double lat2, double lon2, String unit) {
+        double theta = lon1 - lon2;
+        double dist = Math.sin(deg2rad(lat1)) * Math.sin(deg2rad(lat2)) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.cos(deg2rad(theta));
+
+        dist = Math.acos(dist);
+        dist = rad2deg(dist);
+        dist = dist * 60 * 1.1515;
+
+        if (unit == "kilometer") {
+            dist = dist * 1.609344;
+        } else if(unit == "meter"){
+            dist = dist * 1609.344;
+        }
+        return (dist);
+    }
+
+
+    private static double deg2rad(double deg) {
+        return (deg * Math.PI / 180.0);
+    }
+
+    private static double rad2deg(double rad) {
+        return (rad * 180 / Math.PI);
     }
 
     /**Updating Current Location**/
@@ -111,6 +168,10 @@ public class SurroundingsFragment extends Fragment {
                 //TMapPoint arrTMapPoint = tMapView.getCenterPoint();
                 //Log.d("TmapTest", "" + longitude + "," + latitude);
                 tMapPointCurrent = new TMapPoint(latitude, longitude);
+                if(distance(latitude, longitude, endLatitude, endLongitude, "kilometer") < 0.5){
+                    String msg = "목적지에 도착하였습니다.";
+                    toastDisplay(msg);
+                }
                 currentMarker(tMapPointCurrent);
                 if (count) {
                     startLatitude = latitude;
@@ -122,10 +183,9 @@ public class SurroundingsFragment extends Fragment {
         }
     };
 
+
     /**Draw Path**/
     public void DrawPath(){
-        tMapPointFrom = new TMapPoint(startLatitude, startLongitude);
-        tMapPointTo = new TMapPoint(35.18091375602048, 129.07494408467085);
         setMarker();
         TMapPolyLine polyLine = new TMapPolyLine();
         PathAsync pathAsync = new PathAsync();
